@@ -13,6 +13,13 @@ For ease of use, directly copied from the following project and put it in a menu
 
 (2+4=6)
 
+## Demo
+[Miku お気に召すまま](https://www.bilibili.com/video/BV1eY411o7Dd/)
+
+
+## Known Issue
+Sometimes one eye may lose morph animation. <br>
+At present, you can copy the key frame of the other eye through the Animation window( Ctrl + 6 ).
 ## Usage
 
 - For camera animation, just right click on VMD file and select `MMD/Create Camera Anim`<br>
