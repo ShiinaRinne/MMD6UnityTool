@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MMDExtensions.Tools;
 using System.IO;
 using System.Linq;
@@ -11,7 +12,7 @@ public class AnimationHelpers
     public static void CreateMorphAnimation()
     {
         System.GC.Collect();
-        string path =
+        string path = 
             AssetDatabase.GetAssetPath(Selection.GetFiltered<DefaultAsset>(SelectionMode.Assets).FirstOrDefault());
 
         if (Path.GetExtension(path).ToUpper().Contains("VMD"))
@@ -47,47 +48,37 @@ public class AnimationHelpers
                 // ym change
                 // to support group blendshapes
                 // ================================================================================================================
-                string registerName = "";
-
                 try
                 {
-                    if (name == "まばたき")
+                    if (name == MorphAnimationNames.Blink)
                     {
-                        registerName = blendShapeNames.Where(x => x.Split('.').Last() == "ウィンク２").First();
-                        animationClip.SetCurve($"{parentName}/{gameObjectName}", typeof(SkinnedMeshRenderer),
-                            $"blendShape.{registerName}", curve);
-                        registerName = blendShapeNames.Where(x => x.Split('.').Last() == "ｳｨﾝｸ２右").First();
-                        animationClip.SetCurve($"{parentName}/{gameObjectName}", typeof(SkinnedMeshRenderer),
-                            $"blendShape.{registerName}", curve);
-                        continue;
+                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, MorphAnimationNames.Wink2, curve);
+                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, MorphAnimationNames.Wink2Right, curve);
                     }
-
-                    if (name == "笑い")
+                    else if (name == MorphAnimationNames.Smile)
                     {
-                        registerName = blendShapeNames.Where(x => x.Split('.').Last() == "ウィンク").First();
-                        animationClip.SetCurve($"{parentName}/{gameObjectName}", typeof(SkinnedMeshRenderer),
-                            $"blendShape.{registerName}", curve);
-                        registerName = blendShapeNames.Where(x => x.Split('.').Last() == "ウィンク右").First();
-                        animationClip.SetCurve($"{parentName}/{gameObjectName}", typeof(SkinnedMeshRenderer),
-                            $"blendShape.{registerName}", curve);
-                        continue;
+                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, MorphAnimationNames.Wink, curve);
+                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, MorphAnimationNames.WinkRight, curve);
                     }
-
-                    if (name == "ウィンク２" || name == "ｳｨﾝｸ２右" || name == "ウィンク" || name == "ウィンク右")
+                    else if (name == MorphAnimationNames.Wink2 || name == MorphAnimationNames.Wink2Right || name == MorphAnimationNames.Wink || name == MorphAnimationNames.WinkRight)
                     {
-                        if (package.ToArray().Length <= 1)
+                        var registerName = blendShapeNames.Where(x => x.Split('.').Last() == name).First();
+                        var existingCurve = AnimationUtility.GetEditorCurve(animationClip, EditorCurveBinding.FloatCurve($"{parentName}/{gameObjectName}", typeof(SkinnedMeshRenderer), $"blendShape.{registerName}"));
+                        if (existingCurve != null)
                         {
-                            continue;
+                            curve = MergeAnimationCurves(existingCurve, curve);
                         }
+                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, registerName, curve);
                     }
-
-                    registerName = blendShapeNames.Where(x => x.Split('.').Last() == name).First();
-                    animationClip.SetCurve($"{parentName}/{gameObjectName}", typeof(SkinnedMeshRenderer),
-                        $"blendShape.{registerName}", curve);
+                    else
+                    {
+                        var registerName = blendShapeNames.Where(x => x.Split('.').Last() == name).First();
+                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, registerName, curve);
+                    }
                 }
                 catch (Exception e)
                 {
-                    // Debug.Log($"Error: {e.Message}");
+                    Debug.Log($"Error: {e.Message}");
                 }
                 // ================================================================================================================
             }
@@ -112,4 +103,34 @@ public class AnimationHelpers
             Debug.LogError("没有选中文件或文件夹");
         }
     }
+    
+    // ================================================================================================================
+    // ym add
+    // to support group blendshapes
+    // ================================================================================================================
+    private static void AddCurveToAnimationClip(AnimationClip animationClip, string parentName, string gameObjectName, List<string> blendShapeNames, string registerName, AnimationCurve curve)
+    {
+        if (blendShapeNames.Contains(registerName))
+        {
+            animationClip.SetCurve($"{parentName}/{gameObjectName}", typeof(SkinnedMeshRenderer), $"blendShape.{registerName}", curve);
+        }
+    }
+
+    private static AnimationCurve MergeAnimationCurves(AnimationCurve existingCurve, AnimationCurve newCurve)
+    {
+        var existingKeyframes = existingCurve.keys.ToList();
+        existingKeyframes.AddRange(newCurve.keys);
+        return new AnimationCurve(existingKeyframes.ToArray());
+    }
+
+    private static class MorphAnimationNames
+    {
+        public const string Blink = "まばたき";
+        public const string Wink2 = "ウィンク２";
+        public const string Wink2Right = "ｳｨﾝｸ２右";
+        public const string Smile = "笑い";
+        public const string Wink = "ウィンク";
+        public const string WinkRight = "ウィンク右";
+    }
+    // ================================================================================================================
 }
