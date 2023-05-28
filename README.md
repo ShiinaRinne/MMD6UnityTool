@@ -2,16 +2,16 @@
 
 May be used when you use Unity to make MMD
 
-For **export camera and morph animations** from VMD (Character animations, and pmx => fbx you can export
-via [MMD4Mecanim](https://stereoarts.jp/))
+For **export camera and morph animations** from VMD (Character animations). 
+<br>If you want to convert PMX to FBX, you can try using [MMD4Mecanim](https://stereoarts.jp/)
 <br>
-For ease of use, directly copied from the following project and put it in a menu
 
-[MMD2UnityTool](https://github.com/MorphoDiana/MMD2UnityTool)
-
+> For ease of use, directly copied from the following project and put it in a menu, 
+Therefore, please refer to the LICENSE of the original projects<br><br>
+[MMD2UnityTool](https://github.com/MorphoDiana/MMD2UnityTool)<br>
 [MMD4UnityTools](https://github.com/ShiinaRinne/MMD4UnityTools)
 
-(2+4=6)
+~~2+4=6~~
 
 ## Demo
 [Miku お気に召すまま](https://www.bilibili.com/video/BV1eY411o7Dd/)
@@ -31,7 +31,7 @@ For ease of use, directly copied from the following project and put it in a menu
   ![](https://pic.youngmoe.com/1668669748_202211171522697/6375e134917bb.png) <br>
   Then right click and select `MMD/Create Morph Anim`
 
-### [Not Important] When you make post-processing, try this repo
+### [Not Important] If you want to control Post-Process Volume via Timeline, feel free to try this repo
 [TimelineExtensions](https://github.com/ShiinaRinne/TimelineExtensions)
 
 ## License

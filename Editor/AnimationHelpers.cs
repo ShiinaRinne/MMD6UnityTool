@@ -29,85 +29,64 @@ public class AnimationHelpers
                     k => k.MorphName,
                     v => new Keyframe(v.FrameIndex * delta, v.Weight * 100))
                 select keys;
+            
+            var gameobject = Selection.GetFiltered<GameObject>(SelectionMode.TopLevel).FirstOrDefault();
+            var mesh = gameobject.GetComponent<SkinnedMeshRenderer>().sharedMesh;
+            var bsCounts = mesh.blendShapeCount;
+            var blendShapeNames = Enumerable.Range(0, bsCounts).ToList()
+                .ConvertAll(index => mesh.GetBlendShapeName(index));
 
             foreach (var package in keyframes)
             {
                 var name = package.Key;
 
                 var curve = new AnimationCurve(package.ToArray());
-                var gameobject = Selection.GetFiltered<GameObject>(SelectionMode.TopLevel).FirstOrDefault();
+                
                 var gameObjectName = gameobject.name;
                 var parentName = gameobject.transform.parent.name;
-
-                var mesh = gameobject.GetComponent<SkinnedMeshRenderer>().sharedMesh;
-                var bsCounts = mesh.blendShapeCount;
-                var blendShapeNames = Enumerable.Range(0, bsCounts).ToList()
-                    .ConvertAll(index => mesh.GetBlendShapeName(index));
-
-                // ================================================================================================================
-                // ym change
-                // to support group blendshapes
-                // ================================================================================================================
+                
+                
                 try
                 {
+                    string registerName = "";
                     if (name == MorphAnimationNames.Blink)
                     {
-                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, MorphAnimationNames.Wink2, curve);
-                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, MorphAnimationNames.Wink2Right, curve);
+                        registerName = blendShapeNames.Where(x => x.Split('.').Last() == MorphAnimationNames.Wink2).FirstOrDefault();
+                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, registerName, curve);
+                        registerName = blendShapeNames.Where(x => x.Split('.').Last() == MorphAnimationNames.Wink2Right).FirstOrDefault();
+                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, registerName, curve);
                     }
                     else if (name == MorphAnimationNames.Smile)
                     {
-                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, MorphAnimationNames.Wink, curve);
-                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, MorphAnimationNames.WinkRight, curve);
+                        registerName = blendShapeNames.Where(x => x.Split('.').Last() == MorphAnimationNames.Wink).FirstOrDefault();
+                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, registerName, curve);
+                        registerName = blendShapeNames.Where(x => x.Split('.').Last() == MorphAnimationNames.WinkRight).FirstOrDefault();
+                        AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, registerName, curve);
                     }
                     else if (name == MorphAnimationNames.Wink2 || name == MorphAnimationNames.Wink2Right || name == MorphAnimationNames.Wink || name == MorphAnimationNames.WinkRight)
                     {
-                        var registerName = blendShapeNames.Where(x => x.Split('.').Last() == name).First();
+                        registerName = blendShapeNames.Where(x => x.Split('.').Last() == name).FirstOrDefault();
                         var existingCurve = AnimationUtility.GetEditorCurve(animationClip, EditorCurveBinding.FloatCurve($"{parentName}/{gameObjectName}", typeof(SkinnedMeshRenderer), $"blendShape.{registerName}"));
-                        if (existingCurve != null)
-                        {
-                            curve = MergeAnimationCurves(existingCurve, curve);
-                        }
+                        if (existingCurve != null) curve = MergeAnimationCurves(existingCurve, curve);
                         AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, registerName, curve);
                     }
                     else
                     {
-                        var registerName = blendShapeNames.Where(x => x.Split('.').Last() == name).First();
+                        registerName = blendShapeNames.Where(x => x.Split('.').Last() == name).FirstOrDefault();
                         AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, registerName, curve);
                     }
                 }
                 catch (Exception e)
                 {
-                    Debug.Log($"Error: {e.Message}");
+                    Debug.LogError($"Error: {e.Message}");
                 }
-                // ================================================================================================================
             }
-
+            
+            stream.Close();
             AssetDatabase.CreateAsset(animationClip, path.Replace("vmd", "anim"));
         }
     }
-
-    [MenuItem("Assets/MMD/Create Camera Animation")]
-    public static void ExportCameraVmdToAnim()
-    {
-        var selected = Selection.activeObject;
-        string selectPath = AssetDatabase.GetAssetPath(selected);
-        if (!string.IsNullOrEmpty(selectPath))
-        {
-            CameraVmdAgent camera_agent = new CameraVmdAgent(selectPath);
-            camera_agent.CreateAnimationClip();
-            Debug.LogFormat("[{0}]:Export Camera Vmd Success!", System.DateTime.Now);
-        }
-        else
-        {
-            Debug.LogError("没有选中文件或文件夹");
-        }
-    }
     
-    // ================================================================================================================
-    // ym add
-    // to support group blendshapes
-    // ================================================================================================================
     private static void AddCurveToAnimationClip(AnimationClip animationClip, string parentName, string gameObjectName, List<string> blendShapeNames, string registerName, AnimationCurve curve)
     {
         if (blendShapeNames.Contains(registerName))
@@ -132,5 +111,22 @@ public class AnimationHelpers
         public const string Wink = "ウィンク";
         public const string WinkRight = "ウィンク右";
     }
-    // ================================================================================================================
+    
+
+    [MenuItem("Assets/MMD/Create Camera Animation")]
+    public static void ExportCameraVmdToAnim()
+    {
+        var selected = Selection.activeObject;
+        string selectPath = AssetDatabase.GetAssetPath(selected);
+        if (!string.IsNullOrEmpty(selectPath))
+        {
+            CameraVmdAgent camera_agent = new CameraVmdAgent(selectPath);
+            camera_agent.CreateAnimationClip();
+            Debug.LogFormat("[{0}]:Export Camera Vmd Success!", System.DateTime.Now);
+        }
+        else
+        {
+            Debug.LogError("没有选中文件或文件夹");
+        }
+    }
 }
