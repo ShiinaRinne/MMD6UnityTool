@@ -110,19 +110,20 @@ public class VMDCameraConverter
 		AnimationCurve rotW_curve = ToAnimationCurveWithTangentMode(4, AnimationUtility.TangentMode.Free, rotW_keyframes, format.camera_list);
 		AnimationCurve dis_curve = ToAnimationCurveWithTangentMode(5, AnimationUtility.TangentMode.Free, dis_keyframes, format.camera_list);
 		AnimationCurve fov_curve = ToAnimationCurveWithTangentMode(6, AnimationUtility.TangentMode.Free, fov_keyframes, format.camera_list);
-
-
-		AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("", typeof(Transform), "localPosition.x"), posX_curve);
-		AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("", typeof(Transform), "localPosition.y"), posY_curve);
-		AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("", typeof(Transform), "localPosition.z"), posZ_curve);
-		AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("", typeof(Transform), "localRotation.x"), rotX_curve);   //采用欧拉角插值方式
-		AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("", typeof(Transform), "localRotation.y"), rotY_curve);
-		AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("", typeof(Transform), "localRotation.z"), rotZ_curve);
-		AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("", typeof(Transform), "localRotation.w"), rotW_curve);
-
-		AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("Distance", typeof(Transform), "localPosition.z"), dis_curve);
-
-		AnimationUtility.SetEditorCurve(clip, EditorCurveBinding.FloatCurve("Distance/Camera", typeof(Camera), "field of view"), fov_curve);
+		
+		// In 5.3 and onwards, use AnimationClip.SetCurve as much as possible
+		// https://forum.unity.com/threads/new-animationclip-property-names.367288/#post-2384172
+		clip.SetCurve("", typeof(Transform), "m_LocalPosition.x", posX_curve);
+		clip.SetCurve("", typeof(Transform), "m_LocalPosition.y", posY_curve);
+		clip.SetCurve("", typeof(Transform), "m_LocalPosition.z", posZ_curve);
+		
+		clip.SetCurve("", typeof(Transform), "m_LocalRotation.x", rotX_curve);
+		clip.SetCurve("", typeof(Transform), "m_LocalRotation.y", rotY_curve);
+		clip.SetCurve("", typeof(Transform), "m_LocalRotation.z", rotZ_curve);
+		clip.SetCurve("", typeof(Transform), "m_LocalRotation.w", rotW_curve);
+		
+		clip.SetCurve("Distance", typeof(Transform),"m_LocalPosition.z", dis_curve);
+		clip.SetCurve("Distance/Camera", typeof(Camera), "field of view", fov_curve);
 	}
 
 	//经过观察得知interpolation前四位分别是(x1,x2)(y1,y2)
