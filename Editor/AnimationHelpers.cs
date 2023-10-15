@@ -24,7 +24,7 @@ namespace MMD6UnityTool
 
                 var vmd = VMDParser.ParseVMD(stream);
 
-                var animationClip = new AnimationClip() {frameRate = 30};
+                var animationClip = new AnimationClip() {frameRate = 60};
 
                 var delta = 1 / animationClip.frameRate;
 
@@ -47,7 +47,6 @@ namespace MMD6UnityTool
 
                     var gameObjectName = gameobject.name;
                     var parentName = gameobject.transform.parent.name;
-
                     try
                     {
                         string registerName = "";
@@ -62,8 +61,6 @@ namespace MMD6UnityTool
                         {
                             registerName = blendShapeNames.Where(x => x.Split('.').Last() == MorphAnimationNames.Wink).FirstOrDefault();
                             AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, registerName, curve);
-                            var c = package.ToArray();
-                            Debug.Log(package.ToArray());
                             registerName = blendShapeNames.Where(x => x.Split('.').Last() == MorphAnimationNames.WinkRight).FirstOrDefault();
                             AddCurveToAnimationClip(animationClip, parentName, gameObjectName, blendShapeNames, registerName, curve);
                         }
